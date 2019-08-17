@@ -21,7 +21,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.recyclerview.widget.ListAdapter
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.convertDurationToFormatted
@@ -30,23 +32,31 @@ import com.example.android.trackmysleepquality.database.SleepNight
 
 // was able to change this because we defined the ViewHolder class down below
 //class SleepNightAdapter: RecyclerView.Adapter<TextItemViewHolder>() {
-class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
-    var data = listOf<SleepNight>()
-        // ((!!)) to here (from bottom)
-        set(value) {
-            // to actually set the value in the setter
-            // then once the data is updated, it tells the recylcler view that the entire dataset has
-                // changed and recycler view should redraw everthing on screen right away
-            field = value
-            // tells the recyclerview that the entire list is potentially invalid
-            notifyDataSetChanged()
-            // becuase of this call, recycler view rebinds and redraws every item in the list
-        }
+//class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
 
-    // recycler view needs to know how many items it will be displaying
-    override fun getItemCount(): Int {
-        return data.size
-    }
+// now able to change the definition of this class because of the SleepNightDiffCallback class defined below
+    // extend list adapter with two generic arguments (the first is the type of list that it is holding,
+        // the second is the view holder, like before
+        // in addition, there is a constructor that takes the item callback, to figure out what changed
+    // AND BECUASE OF THIS, we can get rid of the var data, because ListAdapter will keep track of this (!@#$)
+class SleepNightAdapter: ListAdapter<SleepNight, SleepNightAdapter.ViewHolder>(SleepNightDiffCallback()) {
+    // (!@#$)
+//    var data = listOf<SleepNight>()
+//        // ((!!)) to here (from bottom)
+//        set(value) {
+//            // to actually set the value in the setter
+//            // then once the data is updated, it tells the recylcler view that the entire dataset has
+//                // changed and recycler view should redraw everthing on screen right away
+//            field = value
+//            // tells the recyclerview that the entire list is potentially invalid
+//            notifyDataSetChanged()
+//            // becuase of this call, recycler view rebinds and redraws every item in the list
+//        }
+// (!@#$)
+//    // recycler view needs to know how many items it will be displaying
+//    override fun getItemCount(): Int {
+//        return data.size
+//    }
 
     // AFTER CHANGING THE SIGNIGURE OF THE CLASS THIS METHOD HAS TO CHANGE (goes to ((**)))
 //    // position is the position in the list we are supposed to be binding
@@ -64,7 +74,13 @@ class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
 //    }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = data[position]
+        // (!@#$)
+
+//        val item = data[position]
+
+        // instead of the above, use..
+        val item = getItem(position)
+
 //        val res = holder.itemView.context.resources
 
         // START HERE
@@ -194,7 +210,29 @@ class SleepNightAdapter: RecyclerView.Adapter<SleepNightAdapter.ViewHolder>() {
             }
         }
     }
+}
 
+class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
+    // when you extend ItemCallback, you have to extend two methods
+    // 1. areItemsTheSame
+    // 2. areContentsTheSame
+
+    override fun areItemsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        // used to determine if an item was added, moved or removed
+        // if two items have the same id, they are the same
+
+        // its important to only check the ids in this callback, that way diffutil will know the differeence
+        // between an item being added removed or moved AND an item being changed (if the item was
+            // changed, areContentsTheSame should be called)
+        return oldItem.nightId == newItem.nightId
+    }
+
+    override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
+        // checks if two items are equal
+        return oldItem == newItem
+        // this is possible because data classes (like SleepNight) already define certian functions for you
+        // in this case the equals method
+    }
 
 
 

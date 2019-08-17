@@ -70,7 +70,10 @@ class SleepTrackerFragment : Fragment() {
                 // recycler vbiew is still onscreen
         sleepTrackerViewModel.nights.observe(viewLifecycleOwner, Observer {
             it?.let {
-                adapter.data = it
+//                adapter.data = it
+                // use the function submitList to determine if the list is different, if so it will grab it
+                    // it will figure out what items were changed, added, etc and update the ones shown in the recycler view
+                adapter.submitList(it)
             }
         })
 
